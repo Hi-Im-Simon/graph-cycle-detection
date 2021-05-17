@@ -1,2 +1,2 @@
 
-        self.graph[v].append(u)
+for i in range(1, 6):

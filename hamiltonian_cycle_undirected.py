@@ -1,139 +1,67 @@
 import time
 
 
-class Graph():
+class Graph:
     def __init__(self, vertices):
-        self.graph = [[0 for column in range(vertices)]
-                      for row in range(vertices)]
-        self.V = vertices
-
-    ''' Check if this vertex is an adjacent vertex 
-        of the previously added vertex and is not 
-        included in the path earlier '''
+        self.graph = [[0 for _ in range(vertices)] for _ in range(vertices)]
+        self.vert = vertices
 
     def isSafe(self, v, pos, path):
-        # Check if current vertex and last vertex
-        # in path are adjacent
-        if self.graph[path[pos-1]][v] == 0:
+        if self.graph[path[pos-1]][v] == 0:                 # sprawdzamy czy ostatnie 2 wierzchołki są połączon
             return False
 
-        # Check if current vertex not already in path
-        for vertex in path:
+        for vertex in path:                                 # sprawdzamy czy wierzchołek nie wystąpił już w cyklu
             if vertex == v:
                 return False
-
         return True
 
-    # A recursive utility function to solve
-    # hamiltonian cycle problem
-    def hamCycleUtil(self, path, pos):
-
-        # base case: if all vertices are
-        # included in the path
-        if pos == self.V:
-            # Last vertex must be adjacent to the
-            # first vertex in path to make a cyle
-            if self.graph[path[pos-1]][path[0]] == 1:
+    def hamSearch(self, path, pos):
+        if pos == self.vert:                                # jeżeli jesteśmy na ostatnim wierzchołku (pos = ilość_wierzchołków)
+            if self.graph[path[pos-1]][path[0]] == 1:       # sprawdzamy czy ostatni wierzchołek w cyklu łączy się z pierwszym
                 return True
             else:
                 return False
 
-        # Try different vertices as a next candidate
-        # in Hamiltonian Cycle. We don't try for 0 as
-        # we included 0 as starting point in hamCycle()
-        for v in range(1, self.V):
-
-            if self.isSafe(v, pos, path) == True:
-
-                path[pos] = v
-
-                if self.hamCycleUtil(path, pos+1) == True:
+        for v in range(1, self.vert):                       # dla każdego wierzchołka
+            if self.isSafe(v, pos, path) == True:           # sprawdzamy czy ostatnie 2 wierzchołki są połączone i czy wierzchołek nie wystąpił już w cyklu
+                path[pos] = v                               # wstawiamy aktualny wierzchołek na koniec cyklu
+                if self.hamSearch(path, pos+1) == True:     # wykonujemy funkcję dla elementu cyklu...
                     return True
-
-                # Remove current vertex if it doesn't
-                # lead to a solution
-                path[pos] = -1
-
+                else:
+                    path[pos] = -1                          # jeżeli nie pasuje, usuwamy wierzchołek z końca cyklu
         return False
 
     def hamCycle(self):
-        path = [-1] * self.V
+        path = [0] + [-1] * (self.vert - 1)                 # -1 to id wierzchołka, który nie istnieje + ustawiamy, że zaczynamy od wierzchołka 0
 
-        ''' Let us put vertex 0 as the first vertex 
-            in the path. If there is a Hamiltonian Cycle, 
-            then the path can be started from any point 
-            of the cycle as the graph is undirected '''
-        path[0] = 0
-
-        if self.hamCycleUtil(path, 1) == False:
-            print("Solution does not exist\n")
-            return False
-
-        self.printSolution(path)
-        return True
-
-    def printSolution(self, path):
-        print("Solution Exists: Following",
-              "is one Hamiltonian Cycle")
-        for vertex in path:
-            print(vertex, end=" ")
-        print(path[0], "\n")
-
-# Driver Code
-
-
-''' Let us create the following graph 
-    (0)--(1)--(2) 
-    | / \ | 
-    | / \ | 
-    | /     \ | 
-    (3)-------(4) '''
-g1 = Graph(5)
-g1.graph = [[0, 1, 0, 1, 0], [1, 0, 1, 1, 1],
-            [0, 1, 0, 0, 1, ], [1, 1, 0, 0, 1],
-            [0, 1, 1, 1, 0], ]
-
-# Print the solution
-g1.hamCycle()
-
-''' Let us create the following graph 
-    (0)--(1)--(2) 
-    | / \ | 
-    | / \ | 
-    | /     \ | 
-    (3)     (4) '''
-g2 = Graph(5)
-g2.graph = [[0, 1, 0, 1, 0], [1, 0, 1, 1, 1],
-            [0, 1, 0, 0, 1, ], [1, 1, 0, 0, 0],
-            [0, 1, 1, 0, 0], ]
-
-# Print the solution
-g2.hamCycle()
-
+        if self.hamSearch(path, 1) == False:
+            #print("There is no Hamiltonian cycle for this graph")
+            return
+        else:
+            for vertex in path:
+                print(vertex, end=" ")
+            print(path[0])
+        
 
 # Graph generator
+for i in range(1, 6):
+    file = [[int(x) for x in line.split()] for line in open("graphs/" + str(i) + ".txt").readlines()]
 
+    for i in range(len(file)):
+        if i == 0:
+            v = file[i][0]
+            g = Graph(v)
+            graph = [[0 for _ in range(v)] for _ in range(v)]
+        else:
+            graph[file[i][0] - 1][file[i][1] - 1] = 1
+            graph[file[i][1] - 1][file[i][0] - 1] = 1
 
-file = [[int(x) for x in line.split()]
-        for line in open("graphs/1.txt").readlines()]
+    g.graph = graph
 
-for i in range(len(file)):
-    if i == 0:
-        v = file[i][0]
-        e = file[i][1]
-        g5 = Graph(v)
-        graph = [[0 for _ in range(v)] for _ in range(v)]
-    else:
-        file[i][0] -= 1
-        file[i][1] -= 1
-        graph[file[i][0]][file[i][1]] = 1
-        graph[file[i][1]][file[i][0]] = 1
+# Time measurement for test cases
 
-g5.graph = graph
+    start = time.time()
 
-# Time measurement for a test case
-start = time.time()
+    g.hamCycle()
 
-g5.hamCycle()
-
-print((time.time() - start) * 1000)
+    print((time.time() - start))
