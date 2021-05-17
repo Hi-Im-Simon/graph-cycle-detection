@@ -1,4 +1,4 @@
-// Input is two intigers - number of vertices and number of edges
+// Input is one intiger - number of vertices
 #include<cstdio>
 #include<ctime>
 #include<cstdlib>
