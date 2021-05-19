@@ -1,29 +1,23 @@
 from collections import defaultdict
 import time
-import sys
-sys.setrecursionlimit(10**6)
 
 
 class Graph:
-
     def __init__(self, vertices):
-        self.V = vertices  # No. of vertices
-        self.graph = defaultdict(list)  # default dictionary to store graph
-        self.Time = 0
+        self.graph = defaultdict(list)
+        self.vert = vertices
 
-    # function to add an edge to graph
-    def addEdge(self, u, v):
-        self.graph[u].append(v)
-        self.graph[v].append(u)
+    def addEdge(self, v1, v2):
+        self.graph[v1].append(v2)
+        self.graph[v2].append(v1)
 
-    # This function removes edge u-v from graph
-    def rmvEdge(self, u, v):
-        for index, key in enumerate(self.graph[u]):
-            if key == v:
-                self.graph[u].pop(index)
-        for index, key in enumerate(self.graph[v]):
-            if key == u:
-                self.graph[v].pop(index)
+    def removeEdge(self, v1, v2):
+        for index, key in enumerate(self.graph[v1]):
+            if key == v2:
+                self.graph[v1].pop(index)
+        for index, key in enumerate(self.graph[v2]):
+            if key == v1:
+                self.graph[v2].pop(index)
 
     # A DFS based function to count reachable vertices from v
     def DFSCount(self, v, visited):
@@ -34,78 +28,71 @@ class Graph:
                 count = count + self.DFSCount(i, visited)
         return count
 
-    # The function to check if edge u-v can be considered as next edge in
-    # Euler Tour
-    def isValidNextEdge(self, u, v):
-        # The edge u-v is valid in one of the following two cases:
-
-        #  1) If v is the only adjacent vertex of u
-        if len(self.graph[u]) == 1:
+    def isValidNextEdge(self, v1, v2):
+        if len(self.graph[v1]) == 1:
             return True
         else:
             '''
              2) If there are multiple adjacents, then u-v is not a bridge
                  Do following steps to check if u-v is a bridge
    
-            2.a) count of vertices reachable from u'''
-            visited = [False]*(self.V)
-            count1 = self.DFSCount(u, visited)
+            2.a) count of vertices reachable from v1'''
+            visited = [False]*(self.vert)
+            count1 = self.DFSCount(v1, visited)
 
-            '''2.b) Remove edge (u, v) and after removing the edge, count
-                vertices reachable from u'''
-            self.rmvEdge(u, v)
-            visited = [False]*(self.V)
-            count2 = self.DFSCount(u, visited)
+            '''2.b) Remove edge (v1, v2) and after removing the edge, count
+                vertices reachable from v1'''
+            self.removeEdge(v1, v2)
+            visited = [False]*(self.vert)
+            count2 = self.DFSCount(v1, visited)
 
             #2.c) Add the edge back to the graph
-            self.addEdge(u, v)
+            self.addEdge(v1, v2)
 
-            # 2.d) If count1 is greater, then edge (u, v) is a bridge
-            return False if count1 > count2 else True
+            if count1 > count2:
+                return False
+            else:
+                return True
 
-    # Print Euler tour starting from vertex u
-
-    def printEulerUtil(self, u):
-        #Recur for all the vertices adjacent to this vertex
-        for v in self.graph[u]:
-            #If edge u-v is not removed and it's a a valid next edge
-            if self.isValidNextEdge(u, v):
-                print("%d-%d " % (u, v)),
-                self.rmvEdge(u, v)
-                self.printEulerUtil(v)
-
-    '''The main function that print Eulerian Trail. It first finds an odd
-   degree vertex (if there is any) and then calls printEulerUtil()
-   to print the path '''
-
-    def printEulerTour(self):
-        #Find a vertex with odd degree
-        u = 0
-        for i in range(self.V):
-            if len(self.graph[i]) % 2 != 0:
-                u = i
+    def eulSearch(self, v1):
+        for v2 in self.graph[v1]:
+            if self.isValidNextEdge(v1, v2):
+                print(str(v1) + "-" + str(v2), end=" "),
+                self.removeEdge(v1, v2)
+                self.eulSearch(v2)
                 break
-        # Print tour starting from odd vertex
-        print("\n")
-        self.printEulerUtil(u)
+
+    def findEulCycle(self):
+        for i in range(self.vert):
+            if len(self.graph[i]) % 2 != 0:
+                print('There is no Eulerian cycle for this graph')
+                return
+
+        for i in range(self.vert):
+            if len(self.graph[i]) > 0:
+                start = i
+                break
+                
+        self.eulSearch(start)
 
 
 # Graph generator
-file = [[int(x) for x in line.split()]
-        for line in open("graphs/1.txt").readlines()]
+for i in range(1, 2):
+    file = [[int(x) for x in line.split()] for line in open("graphs/" + str(i) + ".txt").readlines()]
 
-for i in range(len(file)):
-    if i == 0:
-        vertices = file[i][0]
-        edges = file[i][1]
-        g = Graph(vertices + 1)
-    else:
-        g.addEdge(file[i][0], file[i][1])
+    for i in range(len(file)):
+        if i == 0:
+            vertices = file[i][0]
+            edges = file[i][1]
+            g = Graph(vertices)
+        else:
+            g.addEdge(file[i][0] - 1, file[i][1] - 1)
 
-# Time measurement for a test case
-start = time.time()
+    # Time measurement for test cases
 
-g.printEulerTour()
+    start = time.time()
 
-print((time.time() - start) * 1000)
-# Complexity : O(V+E)
+    g.findEulCycle()
+
+    print((time.time() - start))
+    # Complexity : O(V+E)

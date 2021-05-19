@@ -31,12 +31,11 @@ class Graph:
                     path[pos] = -1                          # jeżeli nie pasuje, usuwamy wierzchołek z końca cyklu
         return False
 
-    def hamCycle(self):
+    def findHamCycle(self):
         path = [0] + [-1] * (self.vert - 1)                 # -1 to id wierzchołka, który nie istnieje + ustawiamy, że zaczynamy od wierzchołka 0
 
         if self.hamSearch(path, 1) == False:
-            #print("There is no Hamiltonian cycle for this graph")
-            return
+            print("There is no Hamiltonian cycle for this graph")
         else:
             for vertex in path:
                 print(vertex, end=" ")
@@ -62,6 +61,6 @@ for i in range(1, 6):
 
     start = time.time()
 
-    g.hamCycle()
+    g.findHamCycle()
 
     print((time.time() - start))
