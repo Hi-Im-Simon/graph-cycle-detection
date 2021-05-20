@@ -7,7 +7,7 @@ class Graph:
         self.vert = vertices
 
     def isSafe(self, v, pos, path):
-        if self.graph[path[pos-1]][v] == 0:                 # sprawdzamy czy ostatnie 2 wierzchołki są połączon
+        if self.graph[path[pos-1]][v] == 0:                 # sprawdzamy czy ostatnie 2 wierzchołki są połączone
             return False
 
         for vertex in path:                                 # sprawdzamy czy wierzchołek nie wystąpił już w cyklu
